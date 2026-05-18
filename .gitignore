@@ -1,9 +1,12 @@
 node_modules
 .env
+
 dist
 build
-
-.vscode
-.idea
+coverage
 
 *.log
+
+.DS_Store
+
+.vscode
