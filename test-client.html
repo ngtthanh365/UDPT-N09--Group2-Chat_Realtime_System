@@ -1,25 +1,65 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Socket.IO Test</title>
+    <title>Socket.IO Test</title>
 </head>
+
 <body>
 
-<h1>Socket.IO Test</h1>
+    <h1>Realtime Chat Test</h1>
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <input id="messageInput" type="text" placeholder="Enter message" />
 
-<script>
-  const socket = io("http://localhost:5000");
+    <button onclick="sendMessage()">
+        Send
+    </button>
 
-  socket.on("connect", () => {
-    console.log("Connected:", socket.id);
-  });
+    <ul id="messages"></ul>
 
-  socket.on("disconnect", () => {
-    console.log("Disconnected");
-  });
-</script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+
+        const gatewayPort = prompt("Enter gateway port (5000 or 5001)");
+
+        const socket = io(`http://localhost:${gatewayPort}`);
+
+        socket.on("connect", () => {
+
+            console.log("Connected:", socket.id);
+
+        });
+
+        function sendMessage() {
+
+            const input = document.getElementById("messageInput");
+
+            const message = input.value;
+
+            socket.emit("send_message", {
+                message,
+            });
+
+            input.value = "";
+
+        }
+
+        socket.on("receive_message", (data) => {
+
+            console.log("Realtime message:", data);
+
+            const li = document.createElement("li");
+
+            li.innerText = data.message;
+
+            document.getElementById("messages")
+                .appendChild(li);
+
+        });
+
+    </script>
 
 </body>
+
 </html>
