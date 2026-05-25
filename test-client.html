@@ -21,9 +21,9 @@
 
     <script>
 
-        const gatewayPort = prompt("Enter gateway port (5000 or 5001)");
-
-        const socket = io(`http://localhost:${gatewayPort}`);
+        const socket = io("http://localhost", {
+            transports: ["websocket"]
+        });
 
         socket.on("connect", () => {
 

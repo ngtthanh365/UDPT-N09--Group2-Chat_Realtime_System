@@ -30,5 +30,13 @@ services:
     networks:
       - chat-network
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx-load-balancer
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+
 networks:
   chat-network:
