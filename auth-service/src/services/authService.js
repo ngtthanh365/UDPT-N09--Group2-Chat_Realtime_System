@@ -1,6 +1,9 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const elasticClient = require(
+    "../config/elasticsearch"
+);
 
 // REGISTER
 const register = async (data) => {
@@ -25,6 +28,15 @@ const register = async (data) => {
         password: hashedPassword,
     });
 
+    await elasticClient.index({
+        index: "users",
+        document: {
+            username: newUser.username,
+            email: newUser.email,
+            first_name: newUser.first_name,
+            last_name: newUser.last_name,
+        },
+    });
     return newUser;
 };
 

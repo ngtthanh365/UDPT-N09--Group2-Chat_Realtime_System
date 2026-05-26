@@ -1,8 +1,12 @@
 require("dotenv").config();
 
-const express = require("express");
+const express = require(
+    "express"
+);
 
 const cors = require("cors");
+
+require("./config/db");
 
 const searchRoutes = require(
     "./routes/searchRoutes"
@@ -14,10 +18,13 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use("/api", searchRoutes);
+app.use(
+    "/api/search",
+    searchRoutes
+);
 
 const PORT =
-    process.env.PORT || 5007;
+    process.env.PORT || 5004;
 
 app.listen(PORT, () => {
     console.log(

@@ -1,27 +1,42 @@
-const pool = require("../config/db");
+const client = require(
+    "../config/elasticsearch"
+);
 
 const searchUsers = async (
     keyword
 ) => {
-    const result = await pool.query(
-        `
-        SELECT
-            id,
-            first_name,
-            last_name,
-            username,
-            email
-        FROM users
-        WHERE
-            username ILIKE $1
-            OR email ILIKE $1
-            OR first_name ILIKE $1
-            OR last_name ILIKE $1
-        `,
-        [`%${keyword}%`]
-    );
+    const result =
+        await client.search({
+            index: "users",
+            query: {
+                bool: {
+                    should: [
+                        {
+                            wildcard: {
+                                username: `*${keyword}*`,
+                            },
+                        },
+                        {
+                            wildcard: {
+                                first_name: `*${keyword}*`,
+                            },
+                        },
+                        {
+                            wildcard: {
+                                last_name: `*${keyword}*`,
+                            },
+                        },
+                    ],
+                },
+            },
+        });
 
-    return result.rows;
+    return result.hits.hits.map(
+        (item) => ({
+            id: item._id,
+            ...item._source,
+        })
+    );
 };
 
 module.exports = {
