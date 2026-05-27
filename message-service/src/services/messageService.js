@@ -1,6 +1,10 @@
-const Conversation = require("../models/Conversation");
+const Conversation = require(
+    "../models/Conversation"
+);
 
-const Message = require("../models/Message");
+const Message = require(
+    "../models/Message"
+);
 
 // CREATE CONVERSATION
 const createConversation = async (
@@ -9,7 +13,10 @@ const createConversation = async (
 ) => {
     const conversation =
         await Conversation.create({
-            members: [senderId, receiverId],
+            members: [
+                senderId,
+                receiverId,
+            ],
         });
 
     return conversation;
@@ -17,24 +24,23 @@ const createConversation = async (
 
 // SEND MESSAGE
 const sendMessage = async (
-    conversationId,
-    senderId,
-    content
+    data
 ) => {
-    const message = await Message.create({
-        conversationId,
-        senderId,
-        content,
-    });
+    const message =
+        await Message.create(data);
 
     return message;
 };
 
 // GET MESSAGES
-const getMessages = async (conversationId) => {
+const getMessages = async (
+    conversationId
+) => {
     return await Message.find({
         conversationId,
-    }).sort({ createdAt: 1 });
+    }).sort({
+        createdAt: 1,
+    });
 };
 
 module.exports = {
