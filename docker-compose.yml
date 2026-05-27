@@ -2,6 +2,17 @@ version: "3.9"
 
 services:
 
+  postgres:
+    image: postgres
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 28102005
+      POSTGRES_DB: auth_service_db
+    ports:
+      - "5432:5432"
+
   mongodb:
     image: mongo
     container_name: mongodb

@@ -62,6 +62,12 @@ const socketHandler = (io) => {
         socket.on(
             "send_message",
             (data) => {
+
+                console.log(
+                    "📨 Message received:",
+                    data
+                );
+                
                 const {
                     conversationId,
                     senderId,

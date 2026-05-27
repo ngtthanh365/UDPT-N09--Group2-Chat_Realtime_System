@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket Cluster Test</title>
+</head>
+
+<body>
+
+    <h1>Distributed Socket Test</h1>
+
+    <input
+        type="text"
+        id="messageInput"
+        placeholder="Enter message"
+    />
+
+    <button id="sendBtn">
+        Send
+    </button>
+
+    <ul id="messages"></ul>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+
+        const socket = io(
+            "http://localhost",
+            {
+                transports: ["websocket"],
+            }
+        );
+
+        socket.on("connect", () => {
+
+            console.log(
+                "✅ Connected:",
+                socket.id
+            );
+
+            socket.emit(
+                "join_conversation",
+                "room1"
+            );
+
+        });
+
+        socket.on(
+            "receive_message",
+            (data) => {
+
+                console.log(
+                    "📩 Received:",
+                    data
+                );
+
+                const li =
+                    document.createElement("li");
+
+                li.innerText =
+                    data.content;
+
+                document
+                    .getElementById(
+                        "messages"
+                    )
+                    .appendChild(li);
+
+            }
+        );
+
+        document
+            .getElementById("sendBtn")
+            .addEventListener(
+                "click",
+                () => {
+
+                    const message =
+                        document.getElementById(
+                            "messageInput"
+                        ).value;
+
+                    console.log(
+                        "📤 Sending:",
+                        message
+                    );
+
+                    socket.emit(
+                        "send_message",
+                        {
+                            senderId:
+                                socket.id,
+
+                            conversationId:
+                                "room1",
+
+                            content:
+                                message,
+                        }
+                    );
+
+                }
+            );
+
+    </script>
+
+</body>
+
+</html>
