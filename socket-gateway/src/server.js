@@ -28,6 +28,15 @@ app.use(cors());
 
 app.use(express.json());
 
+app.get("/health", (req, res) => {
+
+    res.json({
+        status: "OK",
+        gateway: process.env.PORT,
+    });
+
+});
+
 const server = http.createServer(app);
 
 const io = new Server(server, {

@@ -25,13 +25,16 @@ const createConversation = async (req, res) => {
 // SEND MESSAGE
 const sendMessage = async (req, res) => {
     try {
-        const { conversationId, content } =
-            req.body;
+        const {
+            conversationId,
+            senderId,
+            content,
+        } = req.body;
 
         const message =
             await messageService.sendMessage(
                 conversationId,
-                req.user.id,
+                senderId,
                 content
             );
 

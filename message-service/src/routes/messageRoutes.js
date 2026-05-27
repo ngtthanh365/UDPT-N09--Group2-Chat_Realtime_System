@@ -9,14 +9,12 @@ const verifyToken = require("../middlewares/authMiddleware");
 // CREATE CONVERSATION
 router.post(
     "/conversations",
-    verifyToken,
     messageController.createConversation
 );
 
 // SEND MESSAGE
 router.post(
     "/messages",
-    verifyToken,
     messageController.sendMessage
 );
 

@@ -1,3 +1,5 @@
+const axios = require("axios");
+
 const verifySocketToken = require(
     "../middlewares/authMiddleware"
 );
@@ -7,7 +9,7 @@ const onlineUsers = new Map();
 const socketHandler = (io) => {
     io.on("connection", (socket) => {
         console.log(
-            "✅ User connected:",
+            `[Gateway ${process.env.PORT}] ✅ User connected:`,
             socket.id
         );
 
@@ -61,28 +63,60 @@ const socketHandler = (io) => {
 
         socket.on(
             "send_message",
-            (data) => {
+            async (data) => {
 
-                console.log(
-                    "📨 Message received:",
-                    data
-                );
-                
-                const {
-                    conversationId,
-                    senderId,
-                    content,
-                } = data;
+                try {
 
-                io.to(conversationId).emit(
-                    "receive_message",
-                    {
-                        senderId,
+                    console.log(
+                        `[Gateway ${process.env.PORT}] 📨 Message received:`,
+                        data
+                    );
+
+                    const {
+                        conversationId,
                         content,
-                        createdAt:
-                            new Date(),
-                    }
-                );
+                    } = data;
+
+                    const senderId =
+                        socket.user?.id || socket.id;
+
+                    // =========================
+                    // SAVE MESSAGE TO SERVICE
+                    // =========================
+
+                    const response =
+                        await axios.post(
+                            "http://localhost:5003/api/messages",
+                            {
+                                conversationId,
+                                senderId,
+                                content,
+                            }
+                        );
+
+                    console.log(
+                        "✅ Message saved:",
+                        response.data
+                    );
+
+                    // =========================
+                    // EMIT REALTIME
+                    // =========================
+
+                    io.to(conversationId).emit(
+                        "receive_message",
+                        response.data.data
+                    );
+
+                } catch (error) {
+
+                    console.log(
+                        "❌ Send Message Error:",
+                        error.message
+                    );
+
+                }
+
             }
         );
 
@@ -120,7 +154,7 @@ const socketHandler = (io) => {
 
         socket.on("disconnect", () => {
             console.log(
-                "❌ User disconnected:",
+                `[Gateway ${process.env.PORT}] ❌ User disconnected:`,
                 socket.id
             );
 
