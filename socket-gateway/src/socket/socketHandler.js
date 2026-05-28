@@ -21,26 +21,36 @@ const socketHandler = (io) => {
             const user = verifySocketToken(token);
 
             if (!user) {
-                socket.emit("error", "Invalid token");
-                return;
+                console.log("❌ TOKEN INVALID");
+
+                    socket.emit(
+                        "error",
+                        "Invalid token"
+                    );
+
+                    return;
+                }
+
+                socket.user = user;
+
+                onlineUsers.set(
+                    user.id,
+                    socket.id
+                );
+
+                console.log(
+                    `🔥 User ${user.username} authenticated`
+                );
+
+                io.emit(
+                    "online_users",
+                    Array.from(
+                        onlineUsers.keys()
+                    )
+                );
+
             }
-
-            socket.user = user;
-
-            onlineUsers.set(
-                user.id,
-                socket.id
-            );
-
-            console.log(
-                `🔥 User ${user.username} authenticated`
-            );
-
-            io.emit(
-                "online_users",
-                Array.from(onlineUsers.keys())
-            );
-        });
+        );
 
         // =========================
         // JOIN ROOM
@@ -49,11 +59,15 @@ const socketHandler = (io) => {
         socket.on(
             "join_conversation",
             (conversationId) => {
-                socket.join(conversationId);
+
+                socket.join(
+                    conversationId
+                );
 
                 console.log(
                     `User joined room: ${conversationId}`
                 );
+
             }
         );
 
@@ -77,11 +91,25 @@ const socketHandler = (io) => {
                         content,
                     } = data;
 
+                    // =========================
+                    // REQUIRE AUTH
+                    // =========================
+
+                    if (!socket.user) {
+
+                        socket.emit(
+                            "error",
+                            "Unauthorized"
+                        );
+
+                        return;
+                    }
+
                     const senderId =
-                        socket.user?.id || socket.id;
+                        socket.user.id;
 
                     // =========================
-                    // SAVE MESSAGE TO SERVICE
+                    // SAVE MESSAGE
                     // =========================
 
                     const response =
@@ -127,9 +155,11 @@ const socketHandler = (io) => {
         socket.on(
             "typing",
             (conversationId) => {
+
                 socket
                     .to(conversationId)
                     .emit("typing");
+
             }
         );
 
@@ -140,11 +170,11 @@ const socketHandler = (io) => {
         socket.on(
             "stop_typing",
             (conversationId) => {
+
                 socket
                     .to(conversationId)
-                    .emit(
-                        "stop_typing"
-                    );
+                    .emit("stop_typing");
+
             }
         );
 
@@ -152,29 +182,38 @@ const socketHandler = (io) => {
         // DISCONNECT
         // =========================
 
-        socket.on("disconnect", () => {
-            console.log(
-                `[Gateway ${process.env.PORT}] ❌ User disconnected:`,
-                socket.id
-            );
+        socket.on(
+            "disconnect",
+            () => {
 
-            if (
-                socket.user &&
-                socket.user.id
-            ) {
-                onlineUsers.delete(
+                console.log(
+                    `[Gateway ${process.env.PORT}] ❌ User disconnected:`,
+                    socket.id
+                );
+
+                if (
+                    socket.user &&
                     socket.user.id
-                );
+                ) {
 
-                io.emit(
-                    "online_users",
-                    Array.from(
-                        onlineUsers.keys()
-                    )
-                );
+                    onlineUsers.delete(
+                        socket.user.id
+                    );
+
+                    io.emit(
+                        "online_users",
+                        Array.from(
+                            onlineUsers.keys()
+                        )
+                    );
+
+                }
+
             }
-        });
+        );
+
     });
+
 };
 
 module.exports = socketHandler;

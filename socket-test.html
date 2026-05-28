@@ -9,11 +9,7 @@
 
     <h1>Distributed Socket Test</h1>
 
-    <input
-        type="text"
-        id="messageInput"
-        placeholder="Enter message"
-    />
+    <input type="text" id="messageInput" placeholder="Enter message" />
 
     <button id="sendBtn">
         Send
@@ -24,6 +20,7 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
     <script>
+        const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ0ZXN0MiIsImlhdCI6MTc3OTk4NDYzNCwiZXhwIjoxNzgwMDcxMDM0fQ.orNuE4-IiiBMYdB22lTZA6pnje0JqplA2GH1SgV5ZGU";
 
         const socket = io(
             "http://localhost",
@@ -37,6 +34,12 @@
             console.log(
                 "✅ Connected:",
                 socket.id
+            );
+            
+            // AUTH SOCKET
+            socket.emit(
+                "authenticate",
+                TOKEN
             );
 
             socket.emit(
