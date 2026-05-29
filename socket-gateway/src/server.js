@@ -22,6 +22,10 @@ const socketHandler = require(
     "./socket/socketHandler"
 );
 
+const {
+    connectRabbitMQ
+} = require("./rabbitmq/producer");
+
 const app = express();
 
 app.use(cors());
@@ -52,6 +56,9 @@ async function startServer() {
     // =========================
 
     await connectRedis();
+
+    // CONNECT RABBITMQ
+    await connectRabbitMQ();
 
     // =========================
     // SOCKET REDIS ADAPTER

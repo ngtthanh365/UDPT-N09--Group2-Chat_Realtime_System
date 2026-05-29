@@ -1,4 +1,6 @@
-const axios = require("axios");
+const {
+    publishMessage
+} = require("../rabbitmq/producer");
 
 const verifySocketToken = require(
     "../middlewares/authMiddleware"
@@ -23,33 +25,33 @@ const socketHandler = (io) => {
             if (!user) {
                 console.log("❌ TOKEN INVALID");
 
-                    socket.emit(
-                        "error",
-                        "Invalid token"
-                    );
-
-                    return;
-                }
-
-                socket.user = user;
-
-                onlineUsers.set(
-                    user.id,
-                    socket.id
+                socket.emit(
+                    "error",
+                    "Invalid token"
                 );
 
-                console.log(
-                    `🔥 User ${user.username} authenticated`
-                );
-
-                io.emit(
-                    "online_users",
-                    Array.from(
-                        onlineUsers.keys()
-                    )
-                );
-
+                return;
             }
+
+            socket.user = user;
+
+            onlineUsers.set(
+                user.id,
+                socket.id
+            );
+
+            console.log(
+                `🔥 User ${user.username} authenticated`
+            );
+
+            io.emit(
+                "online_users",
+                Array.from(
+                    onlineUsers.keys()
+                )
+            );
+
+        }
         );
 
         // =========================
@@ -112,28 +114,17 @@ const socketHandler = (io) => {
                     // SAVE MESSAGE
                     // =========================
 
-                    const response =
-                        await axios.post(
-                            "http://localhost:5003/api/messages",
-                            {
-                                conversationId,
-                                senderId,
-                                content,
-                            }
-                        );
+                    const messageData = {
+                        conversationId,
+                        senderId,
+                        content,
+                    };
 
-                    console.log(
-                        "✅ Message saved:",
-                        response.data
-                    );
-
-                    // =========================
-                    // EMIT REALTIME
-                    // =========================
+                    await publishMessage(messageData);
 
                     io.to(conversationId).emit(
                         "receive_message",
-                        response.data.data
+                        messageData
                     );
 
                 } catch (error) {

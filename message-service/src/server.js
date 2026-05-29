@@ -1,3 +1,7 @@
+const {
+    connectRabbitMQConsumer
+} = require("./rabbitmq/consumer");
+
 const express = require("express");
 
 const cors = require("cors");
@@ -27,3 +31,6 @@ app.listen(PORT, () => {
         `🚀 Message Service running on port ${PORT}`
     );
 });
+
+// CONNECT RABBITMQ CONSUMER
+connectRabbitMQConsumer();
