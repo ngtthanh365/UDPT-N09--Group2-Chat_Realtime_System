@@ -27,7 +27,7 @@ app.use(express.json());
 
 // ROUTES
 app.use(
-    "/api/v1/messages",
+    "/api/messages",
     messageRoutes
 );
 
