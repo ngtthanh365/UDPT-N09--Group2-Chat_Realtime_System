@@ -3,44 +3,67 @@ const amqp = require("amqplib");
 let channel;
 
 const connectRabbitMQ = async () => {
-    try {
 
-        const connection =
-            await amqp.connect(
-                "amqp://localhost"
+    let retries = 20;
+
+    while (retries) {
+
+        try {
+
+            const connection =
+                await amqp.connect(
+                    process.env.RABBITMQ_URL
+                );
+
+            channel =
+                await connection.createChannel();
+
+            await channel.assertQueue(
+                "chat_messages",
+                {
+                    durable: true,
+                }
             );
 
-        channel =
-            await connection.createChannel();
+            console.log(
+                "✅ RabbitMQ Producer Connected"
+            );
 
-        await channel.assertQueue(
-            "chat_messages",
-            {
-                durable: true,
-            }
-        );
+            return;
 
-        console.log(
-            "✅ RabbitMQ Producer Connected"
-        );
+        } catch (error) {
 
-    } catch (error) {
+            retries--;
 
-        console.log(
-            "❌ RabbitMQ Producer Error:",
-            error.message
-        );
+            console.log(
+                `⏳ RabbitMQ not ready... (${retries} retries left)`
+            );
+
+            await new Promise(
+                resolve =>
+                    setTimeout(resolve, 3000)
+            );
+
+        }
 
     }
+
+    throw new Error(
+        "RabbitMQ connection failed"
+    );
+
 };
 
 const publishMessage = async (messageData) => {
 
     if (!channel) {
+
         console.log(
             "❌ RabbitMQ channel not found"
         );
+
         return;
+
     }
 
     channel.sendToQueue(

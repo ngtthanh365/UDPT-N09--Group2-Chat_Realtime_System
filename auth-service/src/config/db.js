@@ -9,8 +9,46 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-pool.connect()
-    .then(() => console.log("✅ Connected to PostgreSQL"))
-    .catch(err => console.error("❌ DB Connection Error:", err));
+const connectDB = async () => {
 
-module.exports = pool;
+    let retries = 20;
+
+    while (retries > 0) {
+
+        try {
+
+            await pool.query("SELECT NOW()");
+
+            console.log(
+                "✅ Connected to PostgreSQL"
+            );
+
+            return true;
+
+        } catch (error) {
+
+            retries--;
+
+            console.log(
+                `⏳ PostgreSQL not ready... (${retries} retries left)`
+            );
+
+            await new Promise(
+                resolve =>
+                    setTimeout(resolve, 3000)
+            );
+
+        }
+
+    }
+
+    throw new Error(
+        "❌ PostgreSQL connection failed"
+    );
+
+};
+
+module.exports = {
+    pool,
+    connectDB
+};

@@ -1,88 +1,106 @@
 const amqp = require("amqplib");
-
 const Message = require("../models/Message");
 
 let channel;
 
 const connectRabbitMQConsumer = async () => {
 
-    try {
+    let retries = 20;
 
-        const connection =
-            await amqp.connect(
-                "amqp://localhost"
+    while (retries) {
+
+        try {
+
+            const connection =
+                await amqp.connect(
+                    process.env.RABBITMQ_URL
+                );
+
+            channel =
+                await connection.createChannel();
+
+            await channel.assertQueue(
+                "chat_messages",
+                {
+                    durable: true,
+                }
             );
 
-        channel =
-            await connection.createChannel();
+            console.log(
+                "✅ RabbitMQ Consumer Connected"
+            );
 
-        await channel.assertQueue(
-            "chat_messages",
-            {
-                durable: true,
-            }
-        );
+            channel.consume(
+                "chat_messages",
+                async (message) => {
 
-        console.log(
-            "✅ RabbitMQ Consumer Connected"
-        );
+                    if (!message) return;
 
-        // =========================
-        // CONSUME MESSAGE
-        // =========================
+                    try {
 
-        channel.consume(
-            "chat_messages",
-            async (message) => {
+                        const data =
+                            JSON.parse(
+                                message.content.toString()
+                            );
 
-                if (message) {
-
-                    const data =
-                        JSON.parse(
-                            message.content.toString()
+                        console.log(
+                            "📥 Message received:",
+                            data
                         );
 
-                    console.log(
-                        "📥 Message received from RabbitMQ:",
-                        data
-                    );
+                        const newMessage =
+                            await Message.create({
+                                conversationId:
+                                    data.conversationId,
 
-                    // SAVE TO MONGODB
+                                senderId:
+                                    data.senderId,
 
-                    const newMessage =
-                        await Message.create({
-                            conversationId:
-                                data.conversationId,
+                                content:
+                                    data.content,
+                            });
 
-                            senderId:
-                                data.senderId,
+                        console.log(
+                            "✅ Message saved:",
+                            newMessage._id
+                        );
 
-                            content:
-                                data.content,
-                        });
+                        channel.ack(message);
 
-                    console.log(
-                        "✅ Message saved to MongoDB:",
-                        newMessage._id
-                    );
+                    } catch (error) {
 
-                    // ACK MESSAGE
+                        console.log(
+                            "❌ Consume Error:",
+                            error.message
+                        );
 
-                    channel.ack(message);
+                    }
 
                 }
+            );
 
-            }
-        );
+            return;
 
-    } catch (error) {
+        } catch (error) {
 
-        console.log(
-            "❌ RabbitMQ Consumer Error:",
-            error.message
-        );
+            retries--;
+
+            console.log(
+                `⏳ RabbitMQ not ready... (${retries} retries left)`
+            );
+
+            await new Promise(
+                resolve =>
+                    setTimeout(resolve, 3000)
+            );
+
+        }
 
     }
+
+    throw new Error(
+        "RabbitMQ connection failed"
+    );
 
 };
 

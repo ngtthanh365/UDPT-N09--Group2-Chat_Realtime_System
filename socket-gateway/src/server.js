@@ -51,42 +51,43 @@ const io = new Server(server, {
 
 async function startServer() {
 
-    // =========================
-    // CONNECT REDIS
-    // =========================
+    try {
 
-    await connectRedis();
+        await connectRedis();
 
-    // CONNECT RABBITMQ
-    await connectRabbitMQ();
+        await connectRabbitMQ();
 
-    // =========================
-    // SOCKET REDIS ADAPTER
-    // =========================
-
-    io.adapter(
-        createAdapter(
-            pubClient,
-            subClient
-        )
-    );
-
-    // =========================
-    // SOCKET HANDLER
-    // =========================
-
-    socketHandler(io);
-
-    const PORT =
-        process.env.PORT || 5006;
-
-    server.listen(PORT, () => {
-
-        console.log(
-            `🚀 Socket Gateway running on port ${PORT}`
+        io.adapter(
+            createAdapter(
+                pubClient,
+                subClient
+            )
         );
 
-    });
+        socketHandler(io);
+
+        const PORT =
+            process.env.PORT || 5006;
+
+        server.listen(PORT, () => {
+
+            console.log(
+                `🚀 Socket Gateway running on port ${PORT}`
+            );
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "❌ Socket Gateway Startup Error:",
+            error.message
+        );
+
+        process.exit(1);
+
+    }
+
 }
 
 startServer();
