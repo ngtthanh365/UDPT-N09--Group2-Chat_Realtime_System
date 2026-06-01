@@ -1,8 +1,12 @@
-const express = require("express");
+const express = require(
+    "express"
+);
 
 const router = express.Router();
 
-const searchController = require(
+const {
+    searchUsers,
+} = require(
     "../controllers/searchController"
 );
 
@@ -11,9 +15,9 @@ const verifyToken = require(
 );
 
 router.get(
-    "/search/users",
+    "/users",
     verifyToken,
-    searchController.searchUsers
+    searchUsers
 );
 
 module.exports = router;

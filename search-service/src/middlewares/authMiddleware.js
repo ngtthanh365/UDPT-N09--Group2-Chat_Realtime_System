@@ -10,6 +10,7 @@ const verifyToken = (
 
     if (!authHeader) {
         return res.status(401).json({
+            success: false,
             message: "No token provided",
         });
     }
@@ -28,6 +29,7 @@ const verifyToken = (
         next();
     } catch (error) {
         return res.status(401).json({
+            success: false,
             message: "Invalid token",
         });
     }
