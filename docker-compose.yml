@@ -98,6 +98,23 @@ services:
     networks:
       - chat-network
 
+  notification-service:
+    build:
+      context: ./notification-service
+    container_name: notification-service
+    restart: always
+    ports:
+      - "5005:5005"
+
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+
+    networks:
+      - chat-network
+
   nginx:
     image: nginx:latest
     container_name: nginx-load-balancer
