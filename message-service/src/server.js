@@ -7,6 +7,12 @@ const {
     connectRabbitMQConsumer
 } = require("./rabbitmq/consumer");
 
+const {
+    connectRabbitMQProducer
+} = require(
+    "./rabbitmq/producer"
+);
+
 const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
@@ -25,8 +31,11 @@ const startServer = async () => {
         // MongoDB
         await connectDB();
 
-        // RabbitMQ
+        // RabbitMQ Consumer
         await connectRabbitMQConsumer();
+
+        // RabbitMQ Producer
+        await connectRabbitMQProducer();
 
         app.listen(PORT, () => {
 

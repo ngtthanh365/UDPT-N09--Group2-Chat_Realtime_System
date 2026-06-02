@@ -1,6 +1,14 @@
 const amqp = require("amqplib");
 const Message = require("../models/Message");
 
+const {
+    publishNotification
+} = require("./producer");
+
+const Conversation = require(
+    "../models/Conversation"
+);
+
 let channel;
 
 const connectRabbitMQConsumer = async () => {
@@ -25,6 +33,9 @@ const connectRabbitMQConsumer = async () => {
                     durable: true,
                 }
             );
+
+            // xử lý từng message một
+            channel.prefetch(1);
 
             console.log(
                 "✅ RabbitMQ Consumer Connected"
@@ -58,6 +69,15 @@ const connectRabbitMQConsumer = async () => {
 
                                 content:
                                     data.content,
+
+                                type:
+                                    data.type || "text",
+
+                                mediaUrl:
+                                    data.mediaUrl || null,
+
+                                fileName:
+                                    data.fileName || null,
                             });
 
                         console.log(
@@ -65,7 +85,36 @@ const connectRabbitMQConsumer = async () => {
                             newMessage._id
                         );
 
-                        channel.ack(message);
+                        const conversation =
+                            await Conversation.findById(
+                                data.conversationId
+                            );
+
+                        if (conversation) {
+
+                            const receiverId =
+                                conversation.members.find(
+                                    member =>
+                                        member !== Number(
+                                            data.senderId
+                                        )
+                                );
+
+                            if (receiverId) {
+
+                                await publishNotification({
+                                    userId: receiverId,
+                                    senderId: Number(
+                                        data.senderId
+                                    ),
+                                    type: "message",
+                                    content:
+                                        "You received a new message",
+                                    isRead: false,
+                                });
+                            }
+
+                        }
 
                     } catch (error) {
 
@@ -73,6 +122,10 @@ const connectRabbitMQConsumer = async () => {
                             "❌ Consume Error:",
                             error.message
                         );
+
+                    } finally {
+
+                        channel.ack(message);
 
                     }
 
@@ -91,7 +144,10 @@ const connectRabbitMQConsumer = async () => {
 
             await new Promise(
                 resolve =>
-                    setTimeout(resolve, 3000)
+                    setTimeout(
+                        resolve,
+                        3000
+                    )
             );
 
         }
