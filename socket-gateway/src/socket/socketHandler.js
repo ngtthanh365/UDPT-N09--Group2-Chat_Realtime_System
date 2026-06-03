@@ -6,7 +6,8 @@ const verifySocketToken = require(
     "../middlewares/authMiddleware"
 );
 
-const onlineUsers = new Map();
+const onlineUsers =
+    require("./onlineUsers");
 
 const socketHandler = (io) => {
     io.on("connection", (socket) => {

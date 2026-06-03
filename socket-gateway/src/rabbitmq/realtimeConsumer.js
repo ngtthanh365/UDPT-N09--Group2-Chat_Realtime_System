@@ -1,17 +1,12 @@
 const amqp = require("amqplib");
 
-const Notification = require(
-    "../models/Notification"
-);
-
-const {
-    publishRealtimeNotification
-} = require("./realtimeProducer");
+const onlineUsers =
+    require("../socket/onlineUsers");
 
 let channel;
 
-const connectRabbitMQConsumer =
-    async () => {
+const connectRealtimeConsumer =
+    async (io) => {
 
         let retries = 20;
 
@@ -28,18 +23,18 @@ const connectRabbitMQConsumer =
                     await connection.createChannel();
 
                 await channel.assertQueue(
-                    "notification_queue",
+                    "realtime_notification",
                     {
                         durable: true,
                     }
                 );
 
                 console.log(
-                    "✅ Notification RabbitMQ Connected"
+                    "✅ Realtime Notification Consumer Connected"
                 );
 
                 channel.consume(
-                    "notification_queue",
+                    "realtime_notification",
 
                     async (message) => {
 
@@ -53,28 +48,27 @@ const connectRabbitMQConsumer =
                                 );
 
                             console.log(
-                                "📥 Notification received:",
+                                "📥 Realtime Notification:",
                                 data
                             );
 
-                            const notification =
-                                await Notification.create(
+                            const socketId =
+                                onlineUsers.get(
+                                    data.userId
+                                );
+
+                            if (socketId) {
+
+                                io.to(socketId).emit(
+                                    "new_notification",
                                     data
                                 );
 
-                            console.log(
-                                "✅ Notification saved:",
-                                notification._id
-                            );
+                                console.log(
+                                    `🔔 Notification sent to user ${data.userId}`
+                                );
 
-                            // Publish to realtime queue
-                            await publishRealtimeNotification({
-                                userId: data.userId,
-                                senderId: data.senderId,
-                                type: data.type,
-                                content: data.content,
-                                isRead: data.isRead
-                            });
+                            }
 
                             channel.ack(
                                 message
@@ -83,10 +77,14 @@ const connectRabbitMQConsumer =
                         } catch (error) {
 
                             console.log(
-                                "❌ Notification Consume Error:",
+                                "❌ Realtime Notification Error:",
                                 error.message
                             );
-                            channel.ack(message);
+
+                            channel.ack(
+                                message
+                            );
+
                         }
 
                     }
@@ -99,7 +97,7 @@ const connectRabbitMQConsumer =
                 retries--;
 
                 console.log(
-                    `⏳ RabbitMQ not ready... (${retries} retries left)`
+                    `⏳ Realtime Consumer retry (${retries})`
                 );
 
                 await new Promise(
@@ -114,12 +112,8 @@ const connectRabbitMQConsumer =
 
         }
 
-        throw new Error(
-            "RabbitMQ connection failed"
-        );
-
     };
 
 module.exports = {
-    connectRabbitMQConsumer,
+    connectRealtimeConsumer,
 };

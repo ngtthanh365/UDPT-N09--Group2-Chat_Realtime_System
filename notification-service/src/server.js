@@ -13,6 +13,12 @@ const notificationRoutes = require(
     "./routes/notificationRoutes"
 );
 
+const {
+    connectRealtimeProducer
+} = require(
+    "./rabbitmq/realtimeProducer"
+);
+
 const app = express();
 
 app.use(cors());
@@ -30,6 +36,8 @@ const startServer = async () => {
 
         await connectRabbitMQConsumer();
 
+        await connectRealtimeProducer();
+        
         app.listen(PORT, () => {
             console.log(
                 `🚀 Notification Service running on port ${PORT}`

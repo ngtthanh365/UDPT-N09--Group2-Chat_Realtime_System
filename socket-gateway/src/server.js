@@ -26,6 +26,12 @@ const {
     connectRabbitMQ
 } = require("./rabbitmq/producer");
 
+const {
+    connectRealtimeConsumer
+} = require(
+    "./rabbitmq/realtimeConsumer"
+);
+
 const app = express();
 
 app.use(cors());
@@ -65,6 +71,8 @@ async function startServer() {
         );
 
         socketHandler(io);
+
+        await connectRealtimeConsumer(io);
 
         const PORT =
             process.env.PORT || 5006;

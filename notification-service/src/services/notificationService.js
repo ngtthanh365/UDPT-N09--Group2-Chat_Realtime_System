@@ -31,7 +31,7 @@ const markAsRead = async (id) => {
             isRead: true,
         },
         {
-            returnDocument: "after",
+            new: true,
         }
     );
 };
