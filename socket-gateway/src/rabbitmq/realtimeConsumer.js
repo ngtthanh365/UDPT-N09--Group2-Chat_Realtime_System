@@ -29,8 +29,37 @@ const connectRealtimeConsumer =
                     }
                 );
 
+                await channel.assertQueue(
+                    "realtime_messages",
+                    {
+                        durable: true,
+                    }
+                );
+
                 console.log(
-                    "✅ Realtime Notification Consumer Connected"
+                    "✅ Realtime Notification & Messages Consumer Connected"
+                );
+
+                // Consume realtime_messages
+                channel.consume(
+                    "realtime_messages",
+                    async (message) => {
+                        if (!message) return;
+                        try {
+                            const data = JSON.parse(message.content.toString());
+                            console.log("📥 Realtime Message:", data);
+
+                            io.to(data.message.conversationId).emit(
+                                "receive_message",
+                                data.message
+                            );
+
+                            channel.ack(message);
+                        } catch (error) {
+                            console.log("❌ Realtime Message Error:", error.message);
+                            channel.ack(message);
+                        }
+                    }
                 );
 
                 channel.consume(
@@ -53,7 +82,7 @@ const connectRealtimeConsumer =
                             );
 
                             const socketId =
-                                onlineUsers.get(
+                                await onlineUsers.get(
                                     data.userId
                                 );
 

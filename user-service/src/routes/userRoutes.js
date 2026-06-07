@@ -22,7 +22,44 @@ router.put(
     userController.updateProfile
 );
 
-// GET USER BY ID
+// --- FRIENDSHIP ROUTES ---
+
+// GET FRIEND LIST
+router.get(
+    "/users/friends",
+    verifyToken,
+    userController.getFriends
+);
+
+// SEND FRIEND REQUEST
+router.post(
+    "/users/friends/requests",
+    verifyToken,
+    userController.sendFriendRequest
+);
+
+// GET FRIEND REQUESTS
+router.get(
+    "/users/friends/requests",
+    verifyToken,
+    userController.getFriendRequests
+);
+
+// ACCEPT FRIEND REQUEST
+router.post(
+    "/users/friends/requests/:id/accept",
+    verifyToken,
+    userController.acceptFriendRequest
+);
+
+// DECLINE FRIEND REQUEST
+router.post(
+    "/users/friends/requests/:id/decline",
+    verifyToken,
+    userController.declineFriendRequest
+);
+
+// GET USER BY ID (MUST BE AT THE END)
 router.get(
     "/users/:id",
     verifyToken,

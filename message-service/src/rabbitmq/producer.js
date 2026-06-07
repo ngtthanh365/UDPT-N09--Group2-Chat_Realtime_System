@@ -19,15 +19,22 @@ const connectRabbitMQProducer =
                 channel =
                     await connection.createChannel();
 
-                await channel.assertQueue(
+                 await channel.assertQueue(
                     "notification_queue",
                     {
                         durable: true,
                     }
                 );
 
+                await channel.assertQueue(
+                    "realtime_messages",
+                    {
+                        durable: true,
+                    }
+                );
+
                 console.log(
-                    "✅ Notification Producer Connected"
+                    "✅ Notification & Realtime Message Producer Connected"
                 );
 
                 return;
@@ -87,7 +94,37 @@ const publishNotification =
 
     };
 
+const publishRealtimeMessage =
+    async (data) => {
+
+        if (!channel) {
+
+            console.log(
+                "❌ Realtime Message Producer channel not found"
+            );
+
+            return;
+
+        }
+
+        channel.sendToQueue(
+            "realtime_messages",
+            Buffer.from(
+                JSON.stringify(data)
+            ),
+            {
+                persistent: true,
+            }
+        );
+
+        console.log(
+            "📤 Realtime message published"
+        );
+
+    };
+
 module.exports = {
     connectRabbitMQProducer,
     publishNotification,
+    publishRealtimeMessage,
 };

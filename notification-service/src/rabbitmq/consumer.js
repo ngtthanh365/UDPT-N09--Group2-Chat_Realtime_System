@@ -73,7 +73,8 @@ const connectRabbitMQConsumer =
                                 senderId: data.senderId,
                                 type: data.type,
                                 content: data.content,
-                                isRead: data.isRead
+                                isRead: data.isRead,
+                                message: data.message
                             });
 
                             channel.ack(

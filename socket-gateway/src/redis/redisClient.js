@@ -1,7 +1,10 @@
 const { createClient } = require("redis");
 
+const redisUrl =
+    process.env.REDIS_URL || "redis://localhost:6379";
+
 const pubClient = createClient({
-    url: "redis://redis:6379",
+    url: redisUrl,
 });
 
 const subClient = pubClient.duplicate();

@@ -1,5 +1,6 @@
 const amqp = require("amqplib");
 const Message = require("../models/Message");
+const messageService = require("../services/messageService");
 
 const {
     publishNotification
@@ -60,7 +61,7 @@ const connectRabbitMQConsumer = async () => {
                         );
 
                         const newMessage =
-                            await Message.create({
+                            await messageService.sendMessage({
                                 conversationId:
                                     data.conversationId,
 
@@ -111,6 +112,15 @@ const connectRabbitMQConsumer = async () => {
                                     content:
                                         "You received a new message",
                                     isRead: false,
+                                    message: {
+                                        _id: newMessage._id.toString(),
+                                        conversationId: newMessage.conversationId,
+                                        senderId: newMessage.senderId.toString(),
+                                        content: newMessage.content,
+                                        mediaUrl: newMessage.mediaUrl,
+                                        createdAt: newMessage.createdAt,
+                                        updatedAt: newMessage.updatedAt
+                                    }
                                 });
                             }
 

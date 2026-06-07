@@ -49,6 +49,18 @@ services:
     networks:
       - chat-network
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    networks:
+      - chat-network
+
   auth-service:
     build:
       context: ./auth-service
@@ -61,6 +73,31 @@ services:
       postgres:
         condition: service_started
 
+    networks:
+      - chat-network
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-service
+    restart: always
+    ports:
+      - "5002:5002"
+    depends_on:
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - chat-network
+
+  search-service:
+    build:
+      context: ./search-service
+    container_name: search-service
+    restart: always
+    ports:
+      - "5004:5004"
     networks:
       - chat-network
 

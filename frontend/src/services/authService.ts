@@ -8,35 +8,42 @@ export const authService = {
     firstName: string,
     lastName: string
   ) => {
-    const res = await api.post(
-      "/auth/signup",
-      { username, password, email, firstName, lastName },
-      { withCredentials: true }
-    );
-
+    const res = await api.post("/auth/register", {
+      username,
+      password,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+    });
     return res.data;
   },
 
   signIn: async (username: string, password: string) => {
-    const res = await api.post(
-      "auth/signin",
-      { username, password },
-      { withCredentials: true }
-    );
-    return res.data; // access token
+    const res = await api.post("/auth/login", { username, password });
+    const userData = res.data.user;
+    return {
+      token: res.data.token,
+      user: {
+        _id: userData.id.toString(),
+        username: userData.username,
+        email: userData.email,
+        displayName: `${userData.first_name} ${userData.last_name}`,
+      }
+    };
   },
 
   signOut: async () => {
-    return api.post("/auth/signout", { withCredentials: true });
+    return Promise.resolve(true);
   },
 
-  fetchMe: async () => {
-    const res = await api.get("/users/me", { withCredentials: true });
-    return res.data.user;
-  },
-
-  refresh: async () => {
-    const res = await api.post("/auth/refresh", { withCredentials: true });
-    return res.data.accessToken;
+  fetchMe: async (userId: string) => {
+    const res = await api.get(`/users/${userId}`);
+    const userData = res.data.user;
+    return {
+      _id: userData.id.toString(),
+      username: userData.username,
+      email: userData.email,
+      displayName: `${userData.first_name} ${userData.last_name}`,
+    };
   },
 };

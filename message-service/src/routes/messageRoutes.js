@@ -21,6 +21,14 @@ router.post(
     messageController.createConversation
 );
 
+// GET CONVERSATIONS
+router.get(
+    "/conversations",
+    verifyToken,
+    messageController.getConversations
+);
+
+
 // SEND MESSAGE
 router.post(
     "/messages",

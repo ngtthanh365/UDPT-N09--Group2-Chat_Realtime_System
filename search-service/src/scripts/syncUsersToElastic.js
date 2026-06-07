@@ -17,14 +17,13 @@ const syncUsers = async () => {
         for (const user of users.rows) {
             await elasticClient.index({
                 index: "users",
+                id: user.id.toString(),
                 document: {
-                    username:
-                        user.username,
+                    id: user.id,
+                    username: user.username,
                     email: user.email,
-                    first_name:
-                        user.first_name,
-                    last_name:
-                        user.last_name,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
                 },
             });
         }

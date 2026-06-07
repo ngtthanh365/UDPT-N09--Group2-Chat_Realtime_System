@@ -20,7 +20,7 @@ const socketHandler = (io) => {
         // AUTHENTICATE USER
         // =========================
 
-        socket.on("authenticate", (token) => {
+        socket.on("authenticate", async (token) => {
             const user = verifySocketToken(token);
 
             if (!user) {
@@ -36,7 +36,7 @@ const socketHandler = (io) => {
 
             socket.user = user;
 
-            onlineUsers.set(
+            await onlineUsers.set(
                 user.id,
                 socket.id
             );
@@ -46,10 +46,8 @@ const socketHandler = (io) => {
             );
 
             io.emit(
-                "online_users",
-                Array.from(
-                    onlineUsers.keys()
-                )
+                "online-users",
+                await onlineUsers.keys()
             );
 
         }
@@ -61,6 +59,21 @@ const socketHandler = (io) => {
 
         socket.on(
             "join_conversation",
+            (conversationId) => {
+
+                socket.join(
+                    conversationId
+                );
+
+                console.log(
+                    `User joined room: ${conversationId}`
+                );
+
+            }
+        );
+
+        socket.on(
+            "join-conversation",
             (conversationId) => {
 
                 socket.join(
@@ -115,18 +128,11 @@ const socketHandler = (io) => {
                     // SAVE MESSAGE
                     // =========================
 
-                    const messageData = {
+                    await publishMessage({
                         conversationId,
                         senderId,
                         content,
-                    };
-
-                    await publishMessage(messageData);
-
-                    io.to(conversationId).emit(
-                        "receive_message",
-                        messageData
-                    );
+                    });
 
                 } catch (error) {
 
@@ -176,7 +182,7 @@ const socketHandler = (io) => {
 
         socket.on(
             "disconnect",
-            () => {
+            async () => {
 
                 console.log(
                     `[Gateway ${process.env.PORT}] ❌ User disconnected:`,
@@ -188,15 +194,13 @@ const socketHandler = (io) => {
                     socket.user.id
                 ) {
 
-                    onlineUsers.delete(
+                    await onlineUsers.delete(
                         socket.user.id
                     );
 
                     io.emit(
-                        "online_users",
-                        Array.from(
-                            onlineUsers.keys()
-                        )
+                        "online-users",
+                        await onlineUsers.keys()
                     );
 
                 }

@@ -40,7 +40,9 @@ const register = async (data) => {
 
         await elasticClient.index({
             index: "users",
+            id: newUser.id.toString(),
             document: {
+                id: newUser.id,
                 username: newUser.username,
                 email: newUser.email,
                 first_name: newUser.first_name,

@@ -28,9 +28,13 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
   });
 
   const onSubmit = async (data: SignInFormValues) => {
-    const { username, password } = data;
-    await signIn(username, password);
-    navigate("/");
+    try {
+      const { username, password } = data;
+      await signIn(username, password);
+      navigate("/");
+    } catch (error) {
+      // error handled in useAuthStore
+    }
   };
 
   return (
@@ -52,7 +56,7 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
                   className="mx-auto block w-fit text-center"
                 >
                   <img
-                    src="/logo.png" 
+                    src="/logo.png"
                     alt="logo"
                     className="w-[51px] h-[51px]"
                   />
@@ -60,7 +64,7 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
 
                 <h1 className="text-2xl font-bold">Chào mừng quay lại</h1>
                 <p className="text-muted-foreground text-balance">
-                  Đăng nhập vào tài khoản Universe của bạn
+                  Đăng nhập vào tài khoản universe của bạn
                 </p>
               </div>
 
@@ -108,7 +112,7 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
               {/* nút đăng nhập */}
               <Button
                 type="submit"
-                className="w-full bg-[#6d28d9] hover:bg-[#6d28d9]/90 text-white"
+                className="w-full"
                 disabled={isSubmitting}
               >
                 Đăng nhập
@@ -125,8 +129,7 @@ export function SigninForm({ className, ...props }: React.ComponentProps<"div">)
               </div>
             </div>
           </form>
-          {/* Thay #6d28d9 bằng mã màu thực tế lấy từ ảnh của bạn */}
-          <div className="bg-[#6d28d9] relative hidden md:block">
+          <div className="bg-muted relative hidden md:block">
             <img
               src="/placeholder.png"
               alt="Image"
